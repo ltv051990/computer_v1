@@ -88,24 +88,17 @@ namespace computor_v1
         private static readonly string fullPattern = @"(?<left>([+-]?\d+\*x\^\d+){1,}|0)=(?<right>([+-]?\d+\*x\^\d+){1,}|0)";
         private static readonly string expressionPattern = @"[+-]?\d+\*x\^\d+";
         private static readonly string operandPattern = $"(?<operand>{expressionPattern})";
+        private static readonly string zeroPattern = "0";
 
         public static EquationInfo ToEquationInfo(this string input)
         {
-            var leftPart = Regex.Match(input, fullPattern, RegexOptions.IgnoreCase);
-            var left = leftPart.Groups["left"];
-
-            var leftParse = Regex.Matches(left, operandPattern, RegexOptions.IgnoreCase);
-            var lef = leftParse.Cast<Group>()
-                .Where(x => !string.IsNullOrWhiteSpace(x.Value))
-                .Select(x => x.Value)
-                .ToList();
-
-            var rightPart = Regex.Match(input, fullPattern, RegexOptions.IgnoreCase);
-            var right = rightPart.Groups["right"];
+            var parts = Regex.Match(input, fullPattern, RegexOptions.IgnoreCase);
+            var left = parts.ToGroupCollection("left");
+            var right = parts.ToGroupCollection("right");
 
             return EquationInfo.Empty
-                               .ParseLeftPart()
-                               .ParseRightPart();
+                               .ParseLeftPart(left)
+                               .ParseRightPart(right);
         }
 
         private static List<string> ToGroupCollection(this Match match, string groupName)
@@ -117,28 +110,52 @@ namespace computor_v1
 
             var stringFromGroups = match.Groups[groupName].Value;
 
-            var leftParse = Regex.Matches(stringFromGroups, operandPattern, RegexOptions.IgnoreCase);
+            var operandParse = Regex.Matches(stringFromGroups, operandPattern, RegexOptions.IgnoreCase);
 
-            var result = leftParse.Cast<Group>()
-                .Where(x => !string.IsNullOrWhiteSpace(x.Value))
-                .Select(x => x.Value)
-                .ToList();
+            if (operandParse != null)
+            {
+                var result = operandParse.Cast<Group>()
+                                      .Where(x => !string.IsNullOrWhiteSpace(x.Value))
+                                      .Select(x => x.Value)
+                                      .ToList();
+                
+                return result;
+            }
 
-            return result;
+            if (!Regex.IsMatch(stringFromGroups, zeroPattern))
+                throw new ArgumentException("Invalid { nameof(groupName) }-> { groupName}");
+
+            return new List<string>();
         }
     }
 
     public static class EquationInfoExtensions
     {
-        public static EquationInfo ParseLeftPart(this EquationInfo equationInfo, List<Group> groups)
+        public static EquationInfo ParseLeftPart(this EquationInfo equationInfo, List<string> groups)
             => CreateInfoFromRegex(equationInfo, groups, 1);
 
-        public static EquationInfo ParseRightPart(this EquationInfo equationInfo, List<Group> groups)
+        public static EquationInfo ParseRightPart(this EquationInfo equationInfo, List<string> groups)
             => CreateInfoFromRegex(equationInfo, groups, -1);
 
-        private static EquationInfo CreateInfoFromRegex(this EquationInfo equationInfo, List<Group> groups, int coeficient)
+        private static EquationInfo CreateInfoFromRegex(this EquationInfo equationInfo, List<string> groups, int singCoeficient)
         {
-           
+            const string SIGN = "sign";
+            const string COEFICIENT = "coeficient";
+            const string DEGREE = "degree";
+
+            var pattern = $"(?<{SIGN}>[+-]?)(?<{COEFICIENT}>\\d+)\\*x\\^(?<{DEGREE}>\\d+)";
+
+            groups.ForEach(str =>
+            {
+                var operandParse = Regex.Match(str, pattern, RegexOptions.IgnoreCase);
+
+                var sign = operandParse?.Groups?[SIGN]?.Value ?? "+";
+                var coeficient = operandParse.Groups[COEFICIENT].Value;
+                var degree = operandParse.Groups[DEGREE].Value;
+                
+            });
+
+            return equationInfo; 
         }
     }
 
