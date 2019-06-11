@@ -150,9 +150,25 @@ namespace computor_v1
                 var operandParse = Regex.Match(str, pattern, RegexOptions.IgnoreCase);
 
                 var sign = operandParse?.Groups?[SIGN]?.Value ?? "+";
-                var coeficient = operandParse.Groups[COEFICIENT].Value;
-                var degree = operandParse.Groups[DEGREE].Value;
-                
+                var coeficientStr = operandParse.Groups[COEFICIENT].Value;
+                var degreeStr = operandParse.Groups[DEGREE].Value;
+
+                var signCoeficient = 1;
+                switch(sign)
+                {
+                    case "":
+                        coeficient = 1;
+                    break;
+                    case "-":
+                        coeficient = -1;
+                    break;
+                    case "+":
+                        coeficient = 1;
+                    break;
+                }
+
+                var degree = int.Parse(degreeStr);
+                var coeficient = int.Parse(coeficientStr);
             });
 
             return equationInfo; 
@@ -163,8 +179,6 @@ namespace computor_v1
     {
         public static string ValidateInput(string input)
         {
-
-
             var result = input.ToEquationInfo();
 
             return string.Empty;
