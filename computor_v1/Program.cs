@@ -5,82 +5,33 @@ using System.Regex;
 
 namespace computor_v1
 {
-    public class Degree
-    {
-        public Degree(int value)
-        {
-            Value = value;
-        }
-
-        public int Value { get; }
-
-        public static Degree X0 => new Degree(0);
-
-        public static Degree X1 => new Degree(1);
-
-        public static Degree X2 => new Degree(2);
-    }
-
     public class EquationInfo
     {
-        public EquationInfo(DegreeInfo degreeInfo, IEnumerable<XCoeficient> xCoeficients)
+        public EquationInfo(List<CoeficientInfo> xCoeficients)
         {
-            XCoeficients = xCoeficients ?? throw new ArgumentNullException(nameof(xCoeficients));
-            DegreeInfo = degreeInfo ?? throw new ArgumentNullException(nameof(degreeInfo));
+            Coeficients = xCoeficients ?? throw new ArgumentNullException(nameof(xCoeficients));
         }
 
-        public DegreeInfo DegreeInfo { get; }
+        public List<CoeficientInfo> Coeficients { get; }
 
-        public IEnumerable<XCoeficient> XCoeficients { get; }
+        public void AddCoeficient(int coeficient, int degree) => Coeficients.Add(new CoeficientInfo(coeficient, degree));
 
         public static EquationInfo Empty
-            => new EquationInfo(new DegreeInfo(), new XCoeficient[0].AsEnumerable());
+            => new EquationInfo(new CoeficientInfo[0].ToList());
     }
 
-    public class DegreeInfo
+    public class CoeficientInfo
     {
-        public DegreeInfo()
+        public CoeficientInfo(int coeficient, int degree)
         {
+            Coeficient = coeficient;
+            Degree = degree;
         }
 
-        public DegreeInfo(List<Degree> degrees)
-        {
-            Degrees = degrees;
-        }
+        public int Coeficient { get; }
+        public int Degree { get; }
 
-        private readonly List<Degree> Degrees = new List<Degree>();
-
-        public int MaxDegree => Degrees.Select(XCoeficient => XCoeficient.Value).AsEnumerable().Max();
-
-        public int MinDegree => Degrees.Select(XCoeficient => XCoeficient.Value).AsEnumerable().Min();
-
-        public void AddDegree(Degree value) => Degrees.Add(value);
-
-        public static DegreeInfo Copy(DegreeInfo info) => new DegreeInfo(info.Degrees.ToList());
-    }
-
-    public class XCoeficient
-    {
-        private XCoeficient(Degree xType)
-        {
-            XType = xType;
-        }
-
-        private readonly List<int> Coeficients = new List<int>();
-
-        public int Coeficient => Coeficients.Sum();
-
-        public void AddCoeficient(int value) => Coeficients.Add(value);
-
-        public Degree XType { get; }
-
-        public override string ToString() => $"{Coeficient} * X^{XType}";
-
-        public static XCoeficient CreateX0 => new XCoeficient(Degree.X0);
-
-        public static XCoeficient CreateX1 => new XCoeficient(Degree.X1);
-
-        public static XCoeficient CreateX2 => new XCoeficient(Degree.X2);
+        public override string ToString() => $"{Coeficient} * X^{Degree}";
     }
 
     public static class Converters
@@ -137,7 +88,7 @@ namespace computor_v1
         public static EquationInfo ParseRightPart(this EquationInfo equationInfo, List<string> groups)
             => CreateInfoFromRegex(equationInfo, groups, -1);
 
-        private static EquationInfo CreateInfoFromRegex(this EquationInfo equationInfo, List<string> groups, int singCoeficient)
+        private static EquationInfo CreateInfoFromRegex(this EquationInfo equationInfo, List<string> groups, int singCoef)
         {
             const string SIGN = "sign";
             const string COEFICIENT = "coeficient";
@@ -149,10 +100,28 @@ namespace computor_v1
             {
                 var operandParse = Regex.Match(str, pattern, RegexOptions.IgnoreCase);
 
-                var sign = operandParse?.Groups?[SIGN]?.Value ?? "+";
-                var coeficient = operandParse.Groups[COEFICIENT].Value;
-                var degree = operandParse.Groups[DEGREE].Value;
-                
+                var signStr = operandParse?.Groups?[SIGN]?.Value ?? "+";
+                var coeficientStr = operandParse.Groups[COEFICIENT].Value;
+                var degreeStr = operandParse.Groups[DEGREE].Value;
+
+                var signCoeficient = 1;
+                switch(signStr)
+                {
+                    case "" :
+                    case "+" :
+                        signCoeficient = 1;
+                        break;
+                    case "-":
+                        signCoeficient = -1;
+                        break;
+                }
+
+                var degree = int.Parse(degreeStr);
+                var coeficient = int.Parse(coeficientStr);
+
+                var coeficientWithSign = coeficient * signCoeficient * singCoef;
+
+                equationInfo.AddCoeficient(coeficientWithSign, degree);
             });
 
             return equationInfo; 
@@ -163,8 +132,6 @@ namespace computor_v1
     {
         public static string ValidateInput(string input)
         {
-
-
             var result = input.ToEquationInfo();
 
             return string.Empty;
@@ -172,7 +139,7 @@ namespace computor_v1
 
         public static void Main(string[] args)
         {
-            var input = "10*X^2+20*X^3=10*X^2+20*X^3";
+            var input = "8*X^0-6*X^1+0*X^2-5.6*X^3=3*X^0";
 
             var bla = input.ToEquationInfo();
             var result = ValidateInput(input);
