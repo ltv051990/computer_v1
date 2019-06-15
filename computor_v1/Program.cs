@@ -30,8 +30,6 @@ namespace computor_v1
 
         public int Coeficient { get; }
         public int Degree { get; }
-
-        public override string ToString() => $"{Coeficient} * X^{Degree}";
     }
 
     public static class Converters
