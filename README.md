@@ -8,9 +8,12 @@ C# .NET
 The program takes a polynomial equation. That is to say, involving only powers, no
 complicated functions. The program display its solution(s). "
 
-<img width="200" height="300" alt="screen shot 2018-09-16 at 6 28 12 pm 1" src="https://user-images.githubusercontent.com/26527567/50044935-8995d000-0093-11e9-99b0-cc194d013d35.png">
-
+<img width="647" alt="Screen Shot 2019-06-22 at 7 32 47 PM" src="https://user-images.githubusercontent.com/26527567/59966378-bafcc600-9524-11e9-9231-4c2d5d8262c3.png">
 
 Console aplication like this:
 
-<img width="1600" alt="screen shot 2018-09-16 at 6 28 12 pm 1" src="https://user-images.githubusercontent.com/26527567/50045001-b1396800-0094-11e9-9ad5-d4cdfd7b130d.png">
+<img width="630" alt="Screen Shot 2019-06-22 at 7 33 06 PM" src="https://user-images.githubusercontent.com/26527567/59966379-bdf7b680-9524-11e9-8268-d86c6d71e78f.png">
+
+To tun aplication run command sh run_computor.sh
+
+<img width="1087" alt="Screen Shot 2019-06-22 at 6 32 28 PM" src="https://user-images.githubusercontent.com/26527567/59966377-b7693f00-9524-11e9-94c8-67462aca3f43.png">
