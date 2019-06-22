@@ -1,5 +1,3 @@
-# computer_v1
-
 # Computor v1
 C# .NET
 
